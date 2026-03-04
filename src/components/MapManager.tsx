@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { Plus, Trash2, MapPin, Loader2, Skull } from "lucide-react";
+import { Plus, Trash2, MapPin, Loader2, Skull, Edit, Mountain, Droplets, Wind, Flame, Sun, Moon, Zap, Leaf, Ghost, Eye, PawPrint, Bug, Crown, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
 import {
   Select,
   SelectContent,
@@ -20,22 +21,49 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useMaps } from "@/hooks/useMaps";
-import { addMap, deleteMap } from "@/services/mapService";
+import { addMap, updateMap, deleteMap } from "@/services/mapService";
 import { toast } from "sonner";
 
-const ELEMENTS = ["ดิน", "น้ำ", "ลม", "ไฟ", "ศักดิ์สิทธิ์", "ความมืด"];
-const MONSTER_TYPES = ["Plant", "Devil", "Aberration", "Beast", "Insects"];
+const ELEMENTS = ["ดิน", "น้ำ", "ลม", "ไฟ", "ศักดิ์สิทธิ์", "ความมืด", "สายฟ้า"];
+const MONSTER_TYPES = ["Plant", "Devil", "Aberration", "Beast", "Insects", "Transcendent"];
+
+const getElementStyle = (el: string) => {
+  switch (el) {
+    case "ดิน": return { icon: <Mountain className="h-3 w-3" />, color: "text-amber-700 border-amber-700/20 bg-amber-700/10" };
+    case "น้ำ": return { icon: <Droplets className="h-3 w-3" />, color: "text-blue-500 border-blue-500/20 bg-blue-500/10" };
+    case "ลม": return { icon: <Wind className="h-3 w-3" />, color: "text-teal-400 border-teal-400/20 bg-teal-400/10" };
+    case "ไฟ": return { icon: <Flame className="h-3 w-3" />, color: "text-red-500 border-red-500/20 bg-red-500/10" };
+    case "ศักดิ์สิทธิ์": return { icon: <Sun className="h-3 w-3" />, color: "text-yellow-500 border-yellow-500/20 bg-yellow-500/10" };
+    case "ความมืด": return { icon: <Moon className="h-3 w-3" />, color: "text-purple-500 border-purple-500/20 bg-purple-500/10" };
+    case "สายฟ้า": return { icon: <Zap className="h-3 w-3" />, color: "text-yellow-400 border-yellow-400/20 bg-yellow-400/10" };
+    default: return { icon: null, color: "text-slate-400 border-slate-400/20 bg-slate-400/10" };
+  }
+};
+
+const getMonsterStyle = (type: string) => {
+  switch (type) {
+    case "Plant": return { icon: <Leaf className="h-3 w-3" />, color: "text-green-500 border-green-500/20 bg-green-500/10" };
+    case "Devil": return { icon: <Ghost className="h-3 w-3" />, color: "text-rose-500 border-rose-500/20 bg-rose-500/10" };
+    case "Aberration": return { icon: <Eye className="h-3 w-3" />, color: "text-fuchsia-500 border-fuchsia-500/20 bg-fuchsia-500/10" };
+    case "Beast": return { icon: <PawPrint className="h-3 w-3" />, color: "text-orange-500 border-orange-500/20 bg-orange-500/10" };
+    case "Insects": return { icon: <Bug className="h-3 w-3" />, color: "text-lime-500 border-lime-500/20 bg-lime-500/10" };
+    case "Transcendent": return { icon: <Crown className="h-3 w-3" />, color: "text-amber-500 border-amber-500/20 bg-amber-500/10" };
+    default: return { icon: null, color: "text-slate-400 border-slate-400/20 bg-slate-400/10" };
+  }
+};
 
 export function MapManager() {
   const { maps, loading } = useMaps();
+  const [editingId, setEditingId] = useState<string | null>(null);
+  
   const [name, setName] = useState("");
   const [bossName, setBossName] = useState("");
   const [element, setElement] = useState("");
   const [monsterType, setMonsterType] = useState("");
   
-  const [isAdding, setIsAdding] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleAdd = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const trimmedName = name.trim();
     const trimmedBoss = bossName.trim();
@@ -45,24 +73,45 @@ export function MapManager() {
       return;
     }
 
-    setIsAdding(true);
+    setIsSubmitting(true);
     try {
-      await addMap({
+      const payload = {
         name: trimmedName,
         bossName: trimmedBoss,
         element,
         monsterType
-      });
-      setName("");
-      setBossName("");
-      setElement("");
-      setMonsterType("");
-      toast.success(`Map "${trimmedName}" added successfully`);
+      };
+
+      if (editingId) {
+        await updateMap(editingId, payload);
+        toast.success(`Map "${trimmedName}" updated`);
+      } else {
+        await addMap(payload);
+        toast.success(`Map "${trimmedName}" added`);
+      }
+      resetForm();
     } catch {
-      toast.error("Failed to add map");
+      toast.error(editingId ? "Failed to update map" : "Failed to add map");
     } finally {
-      setIsAdding(false);
+      setIsSubmitting(false);
     }
+  };
+
+  const resetForm = () => {
+    setEditingId(null);
+    setName("");
+    setBossName("");
+    setElement("");
+    setMonsterType("");
+  };
+
+  const startEdit = (map: any) => {
+    setEditingId(map.id);
+    setName(map.name);
+    setBossName(map.bossName || "");
+    setElement(map.element || "");
+    setMonsterType(map.monsterType || "");
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleDelete = async (id: string, mapName: string) => {
@@ -86,7 +135,12 @@ export function MapManager() {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        <form onSubmit={handleAdd} className="space-y-4 rounded-md border border-border/50 bg-background/30 p-4">
+        <form onSubmit={handleSubmit} className="space-y-4 rounded-md border border-border/50 bg-background/30 p-4 relative">
+          {editingId && (
+            <div className="absolute top-2 right-2 flex items-center gap-2">
+              <Badge variant="secondary" className="bg-amber-500/10 text-amber-500 border border-amber-500/20">Edit Mode</Badge>
+            </div>
+          )}
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <div className="space-y-2">
               <Label htmlFor="map-name">Map Name</Label>
@@ -139,17 +193,23 @@ export function MapManager() {
             </div>
           </div>
           
-          <div className="flex justify-end">
-            <Button type="submit" disabled={isAdding || !name.trim() || !bossName.trim() || !element || !monsterType}>
-              {isAdding ? (
+          <div className="flex justify-end gap-2">
+            {editingId && (
+              <Button type="button" variant="outline" onClick={resetForm} disabled={isSubmitting}>
+                <X className="mr-2 h-4 w-4" />
+                Cancel
+              </Button>
+            )}
+            <Button type="submit" disabled={isSubmitting || !name.trim() || !bossName.trim() || !element || !monsterType}>
+              {isSubmitting ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Adding...
+                  {editingId ? "Updating..." : "Adding..."}
                 </>
               ) : (
                 <>
-                  <Plus className="mr-2 h-4 w-4" />
-                  Add Map
+                  {editingId ? <Edit className="mr-2 h-4 w-4" /> : <Plus className="mr-2 h-4 w-4" />}
+                  {editingId ? "Update Map" : "Add Map"}
                 </>
               )}
             </Button>
@@ -196,25 +256,43 @@ export function MapManager() {
                       </div>
                     </TableCell>
                     <TableCell>
-                      {map.element && (
-                        <span className="inline-flex items-center rounded-full border border-sky-500/20 bg-sky-500/10 px-2.5 py-0.5 text-xs font-semibold text-sky-500">
-                          {map.element}
-                        </span>
-                      )}
+                      {map.element && (() => {
+                        const style = getElementStyle(map.element);
+                        return (
+                          <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold ${style.color}`}>
+                            {style.icon}
+                            {map.element}
+                          </span>
+                        );
+                      })()}
                     </TableCell>
                     <TableCell>
-                      {map.monsterType && (
-                        <span className="inline-flex items-center rounded-full border border-purple-500/20 bg-purple-500/10 px-2.5 py-0.5 text-xs font-semibold text-purple-500">
-                          {map.monsterType}
-                        </span>
-                      )}
+                      {map.monsterType && (() => {
+                        const style = getMonsterStyle(map.monsterType);
+                        return (
+                          <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold ${style.color}`}>
+                            {style.icon}
+                            {map.monsterType}
+                          </span>
+                        );
+                      })()}
                     </TableCell>
                     <TableCell className="text-right">
                       <Button
                         variant="ghost"
                         size="icon"
+                        onClick={() => startEdit(map)}
+                        className="opacity-0 transition-opacity group-hover:opacity-100 hover:text-blue-400"
+                        title="Edit Map"
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
                         onClick={() => handleDelete(map.id, map.name)}
-                        className="opacity-0 transition-opacity group-hover:opacity-100 hover:bg-destructive hover:text-destructive-foreground"
+                        className="opacity-0 transition-opacity group-hover:opacity-100 hover:bg-destructive hover:text-destructive-foreground ml-1"
+                        title="Delete Map"
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>

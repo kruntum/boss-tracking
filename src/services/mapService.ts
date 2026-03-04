@@ -1,6 +1,7 @@
 import {
     collection,
     addDoc,
+    updateDoc,
     deleteDoc,
     doc,
     onSnapshot,
@@ -31,6 +32,10 @@ export function subscribeMaps(callback: (maps: GameMap[]) => void) {
 
 export async function addMap(mapData: Omit<GameMap, 'id'>) {
     await addDoc(collection(db, COLLECTION_NAME), mapData);
+}
+
+export async function updateMap(id: string, mapData: Partial<GameMap>) {
+    await updateDoc(doc(db, COLLECTION_NAME, id), mapData);
 }
 
 export async function deleteMap(id: string) {
