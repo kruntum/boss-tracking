@@ -6,7 +6,7 @@ import { Toaster } from "@/components/ui/sonner";
 
 function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename="/boss-tracking">
       <div className="min-h-screen bg-background text-foreground">
         {/* Subtle gradient background */}
         <div className="fixed inset-0 -z-10 bg-linear-to-br from-background via-background to-red-950/10" />
