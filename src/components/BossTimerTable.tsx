@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Skull, RotateCcw, Trash2, Loader2, MapPin, Radio, Clock, Edit } from "lucide-react";
+import { Skull, RotateCcw, Trash2, Loader2, MapPin, Radio, Clock, Edit, Mountain, Droplets, Wind, Flame, Sun, Moon, Zap, Leaf, Ghost, Eye, PawPrint, Bug, Crown } from "lucide-react";
 import { format } from "date-fns";
 import {
   Table,
@@ -40,28 +40,28 @@ function getNextSpawnTime(timer: BossTimer): Date | null {
   return new Date(deathMs + timer.respawn_countdown * 60 * 1000);
 }
 
-const getElementColor = (el: string) => {
+const getElementStyle = (el: string) => {
   switch (el) {
-    case "ดิน": return "text-amber-700 bg-amber-700/10 border-amber-700/20";
-    case "น้ำ": return "text-blue-500 bg-blue-500/10 border-blue-500/20";
-    case "ลม": return "text-teal-400 bg-teal-400/10 border-teal-400/20";
-    case "ไฟ": return "text-red-500 bg-red-500/10 border-red-500/20";
-    case "ศักดิ์สิทธิ์": return "text-yellow-500 bg-yellow-500/10 border-yellow-500/20";
-    case "ความมืด": return "text-purple-500 bg-purple-500/10 border-purple-500/20";
-    case "สายฟ้า": return "text-yellow-400 bg-yellow-400/10 border-yellow-400/20";
-    default: return "text-slate-400 bg-slate-400/10 border-slate-400/20";
+    case "ดิน": return { icon: <Mountain className="h-2.5 w-2.5" />, color: "text-amber-700 bg-amber-700/10 border-amber-700/20" };
+    case "น้ำ": return { icon: <Droplets className="h-2.5 w-2.5" />, color: "text-blue-500 bg-blue-500/10 border-blue-500/20" };
+    case "ลม": return { icon: <Wind className="h-2.5 w-2.5" />, color: "text-teal-400 bg-teal-400/10 border-teal-400/20" };
+    case "ไฟ": return { icon: <Flame className="h-2.5 w-2.5" />, color: "text-red-500 bg-red-500/10 border-red-500/20" };
+    case "ศักดิ์สิทธิ์": return { icon: <Sun className="h-2.5 w-2.5" />, color: "text-yellow-500 bg-yellow-500/10 border-yellow-500/20" };
+    case "ความมืด": return { icon: <Moon className="h-2.5 w-2.5" />, color: "text-purple-500 bg-purple-500/10 border-purple-500/20" };
+    case "สายฟ้า": return { icon: <Zap className="h-2.5 w-2.5" />, color: "text-yellow-400 bg-yellow-400/10 border-yellow-400/20" };
+    default: return { icon: null, color: "text-slate-400 bg-slate-400/10 border-slate-400/20" };
   }
 };
 
-const getMonsterTypeColor = (type: string) => {
+const getMonsterStyle = (type: string) => {
   switch (type) {
-    case "Plant": return "text-green-500 bg-green-500/10 border-green-500/20";
-    case "Devil": return "text-rose-500 bg-rose-500/10 border-rose-500/20";
-    case "Aberration": return "text-fuchsia-500 bg-fuchsia-500/10 border-fuchsia-500/20";
-    case "Beast": return "text-orange-500 bg-orange-500/10 border-orange-500/20";
-    case "Insects": return "text-lime-500 bg-lime-500/10 border-lime-500/20";
-    case "Transcendent": return "text-amber-500 bg-amber-500/10 border-amber-500/20";
-    default: return "text-slate-400 bg-slate-400/10 border-slate-400/20";
+    case "Plant": return { icon: <Leaf className="h-2.5 w-2.5" />, color: "text-green-500 bg-green-500/10 border-green-500/20" };
+    case "Devil": return { icon: <Ghost className="h-2.5 w-2.5" />, color: "text-rose-500 bg-rose-500/10 border-rose-500/20" };
+    case "Aberration": return { icon: <Eye className="h-2.5 w-2.5" />, color: "text-fuchsia-500 bg-fuchsia-500/10 border-fuchsia-500/20" };
+    case "Beast": return { icon: <PawPrint className="h-2.5 w-2.5" />, color: "text-orange-500 bg-orange-500/10 border-orange-500/20" };
+    case "Insects": return { icon: <Bug className="h-2.5 w-2.5" />, color: "text-lime-500 bg-lime-500/10 border-lime-500/20" };
+    case "Transcendent": return { icon: <Crown className="h-2.5 w-2.5" />, color: "text-amber-500 bg-amber-500/10 border-amber-500/20" };
+    default: return { icon: null, color: "text-slate-400 bg-slate-400/10 border-slate-400/20" };
   }
 };
 
@@ -226,16 +226,24 @@ export function BossTimerTable() {
                               {mapInfo.bossName}
                             </span>
                           )}
-                          {mapInfo.element && (
-                            <Badge variant="outline" className={`text-[10px] px-1.5 py-0 h-4 border ${getElementColor(mapInfo.element)}`}>
-                              {mapInfo.element}
-                            </Badge>
-                          )}
-                          {mapInfo.monsterType && (
-                            <Badge variant="outline" className={`text-[10px] px-1.5 py-0 h-4 border ${getMonsterTypeColor(mapInfo.monsterType)}`}>
-                              {mapInfo.monsterType}
-                            </Badge>
-                          )}
+                          {mapInfo.element && (() => {
+                            const style = getElementStyle(mapInfo.element);
+                            return (
+                              <Badge variant="outline" className={`gap-1 text-[10px] px-1.5 py-0 h-4 border ${style.color}`}>
+                                {style.icon}
+                                {mapInfo.element}
+                              </Badge>
+                            );
+                          })()}
+                          {mapInfo.monsterType && (() => {
+                            const style = getMonsterStyle(mapInfo.monsterType);
+                            return (
+                              <Badge variant="outline" className={`gap-1 text-[10px] px-1.5 py-0 h-4 border ${style.color}`}>
+                                {style.icon}
+                                {mapInfo.monsterType}
+                              </Badge>
+                            );
+                          })()}
                         </div>
                       )}
                     </div>
