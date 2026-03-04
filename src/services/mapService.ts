@@ -15,16 +15,22 @@ const COLLECTION_NAME = "maps";
 export function subscribeMaps(callback: (maps: GameMap[]) => void) {
     const q = query(collection(db, COLLECTION_NAME), orderBy("name"));
     return onSnapshot(q, (snapshot) => {
-        const maps: GameMap[] = snapshot.docs.map((doc) => ({
-            id: doc.id,
-            name: doc.data().name,
-        }));
+        const maps: GameMap[] = snapshot.docs.map((doc) => {
+            const data = doc.data();
+            return {
+                id: doc.id,
+                name: data.name,
+                bossName: data.bossName || "",
+                element: data.element || "",
+                monsterType: data.monsterType || "",
+            };
+        });
         callback(maps);
     });
 }
 
-export async function addMap(name: string) {
-    await addDoc(collection(db, COLLECTION_NAME), { name });
+export async function addMap(mapData: Omit<GameMap, 'id'>) {
+    await addDoc(collection(db, COLLECTION_NAME), mapData);
 }
 
 export async function deleteMap(id: string) {

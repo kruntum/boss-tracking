@@ -3,6 +3,9 @@ import type { Timestamp } from "firebase/firestore";
 export interface GameMap {
     id: string;
     name: string;
+    bossName: string;
+    element: string;
+    monsterType: string;
 }
 
 export interface Channel {
