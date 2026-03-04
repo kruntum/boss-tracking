@@ -55,6 +55,13 @@ export async function updateBossDeathTime(id: string) {
     });
 }
 
+export async function updateBossTimer(id: string, data: {
+    respawn_countdown: number;
+    monster_death_time: Timestamp | null;
+}) {
+    await updateDoc(doc(db, COLLECTION_NAME, id), data);
+}
+
 export async function resetBossTimer(id: string) {
     await updateDoc(doc(db, COLLECTION_NAME, id), {
         monster_death_time: null,
