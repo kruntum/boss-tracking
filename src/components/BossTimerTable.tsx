@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Skull, RotateCcw, Trash2, Loader2, MapPin, Radio, Clock, Edit, Mountain, Droplets, Wind, Flame, Sun, Moon, Zap, Leaf, Ghost, Eye, PawPrint, Bug, Crown } from "lucide-react";
+import { Skull, RotateCcw, Trash2, Loader2, MapPin, Radio, Clock, Edit, Mountain, Droplets, Wind, Flame, Sun, Moon, Zap, Leaf, Ghost, Eye, PawPrint, Bug, Crown, Star } from "lucide-react";
 import { format } from "date-fns";
 import {
   Table,
@@ -28,6 +28,7 @@ import {
   resetBossTimer,
   deleteBossTimer,
   updateBossTimer,
+  toggleFavorite,
 } from "@/services/bossTimerService";
 import { CountdownCell } from "./CountdownCell";
 import { toast } from "sonner";
@@ -79,8 +80,8 @@ export function BossTimerTable() {
   const mapLookup = new Map(maps.map((m) => [m.id, m]));
   const channelLookup = new Map(channels.map((c) => [c.id, c.name]));
 
-  // Sorting logic
-  const sortedTimers = [...bossTimers].sort((a, b) => {
+  // Helper: compare two timers by spawn time / map name
+  const compareBySpawn = (a: BossTimer, b: BossTimer) => {
     const nextSpawnA = getNextSpawnTime(a);
     const nextSpawnB = getNextSpawnTime(b);
 
@@ -94,7 +95,23 @@ export function BossTimerTable() {
     const mapA = mapLookup.get(a.map_id)?.name || "";
     const mapB = mapLookup.get(b.map_id)?.name || "";
     return mapA.localeCompare(mapB);
+  };
+
+  // Sorting logic: favorites first, then by spawn time within each group
+  const sortedTimers = [...bossTimers].sort((a, b) => {
+    const favA = a.is_favorite ? 1 : 0;
+    const favB = b.is_favorite ? 1 : 0;
+    if (favA !== favB) return favB - favA; // Favorites first
+    return compareBySpawn(a, b);
   });
+
+  const handleToggleFavorite = async (timer: BossTimer) => {
+    try {
+      await toggleFavorite(timer.id, timer.is_favorite);
+    } catch {
+      toast.error("Failed to toggle favorite");
+    }
+  };
 
   const handleKill = async (id: string) => {
     try {
@@ -193,6 +210,7 @@ export function BossTimerTable() {
         <Table>
           <TableHeader>
             <TableRow className="border-border/50 hover:bg-transparent">
+              <TableHead className="text-xs uppercase tracking-wider font-semibold text-muted-foreground py-2 w-10"><Star className="h-3.5 w-3.5 mx-auto" /></TableHead>
               <TableHead className="text-xs uppercase tracking-wider font-semibold text-muted-foreground py-2">Map & Boss</TableHead>
               <TableHead className="text-xs uppercase tracking-wider font-semibold text-muted-foreground py-2">Channel</TableHead>
               <TableHead className="text-xs uppercase tracking-wider font-semibold text-muted-foreground py-2">Respawn</TableHead>
@@ -209,13 +227,36 @@ export function BossTimerTable() {
               return (
                 <TableRow
                   key={timer.id}
-                  className="border-border/30 hover:bg-accent/30 transition-colors"
+                  className={`border-border/30 transition-colors ${
+                    timer.is_favorite
+                      ? "bg-yellow-500/5 border-l-2 border-l-yellow-400/50 hover:bg-yellow-500/10"
+                      : "hover:bg-accent/30"
+                  }`}
                 >
+                  <TableCell className="py-2 align-middle w-10">
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => handleToggleFavorite(timer)}
+                      className={`h-8 w-8 p-0 transition-colors ${
+                        timer.is_favorite
+                          ? "text-yellow-400 hover:text-yellow-300"
+                          : "text-muted-foreground/40 hover:text-yellow-400"
+                      }`}
+                      title={timer.is_favorite ? "Remove from favorites" : "Add to favorites"}
+                    >
+                      <Star className={`h-4 w-4 ${timer.is_favorite ? "fill-yellow-400" : ""}`} />
+                    </Button>
+                  </TableCell>
                   <TableCell className="py-2 align-middle">
                     <div className="flex flex-col gap-1">
                       <div className="flex items-center gap-1.5">
                         <MapPin className="h-3.5 w-3.5 text-emerald-400" />
-                        <span className="font-medium text-sm">{mapInfo?.name || "Unknown"}</span>
+                        <span className={`font-medium text-sm ${
+                          timer.is_favorite
+                            ? "text-white drop-shadow-[0_0_4px_rgba(250,204,21,0.4)]"
+                            : ""
+                        }`}>{mapInfo?.name || "Unknown"}</span>
                       </div>
                       
                       {mapInfo && (mapInfo.bossName || mapInfo.element || mapInfo.monsterType) && (

@@ -22,6 +22,7 @@ export interface BossTimer {
     respawn_countdown: number; // in minutes
     recorded_time: Timestamp;
     monster_death_time: Timestamp | null;
+    is_favorite: boolean;
 }
 
 export interface BossTimerWithDetails extends BossTimer {

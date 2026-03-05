@@ -31,6 +31,7 @@ export function subscribeBossTimers(
                 respawn_countdown: data.respawn_countdown,
                 recorded_time: data.recorded_time,
                 monster_death_time: data.monster_death_time ?? null,
+                is_favorite: data.is_favorite ?? false,
             };
         });
         callback(timers);
@@ -70,4 +71,10 @@ export async function resetBossTimer(id: string) {
 
 export async function deleteBossTimer(id: string) {
     await deleteDoc(doc(db, COLLECTION_NAME, id));
+}
+
+export async function toggleFavorite(id: string, currentValue: boolean) {
+    await updateDoc(doc(db, COLLECTION_NAME, id), {
+        is_favorite: !currentValue,
+    });
 }
