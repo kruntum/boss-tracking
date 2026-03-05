@@ -6,6 +6,8 @@ export interface GameMap {
     bossName: string;
     element: string;
     monsterType: string;
+    mapLevel: number;
+    bossLevel: number;
 }
 
 export interface Channel {

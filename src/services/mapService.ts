@@ -24,6 +24,8 @@ export function subscribeMaps(callback: (maps: GameMap[]) => void) {
                 bossName: data.bossName || "",
                 element: data.element || "",
                 monsterType: data.monsterType || "",
+                mapLevel: data.mapLevel || 0,
+                bossLevel: data.bossLevel || 0,
             };
         });
         callback(maps);

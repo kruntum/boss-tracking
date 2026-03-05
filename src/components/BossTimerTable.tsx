@@ -244,6 +244,16 @@ export function BossTimerTable() {
                               </Badge>
                             );
                           })()}
+                          {mapInfo.mapLevel > 0 && (
+                            <Badge variant="outline" className="gap-1 text-[10px] px-1.5 py-0 h-4 border text-sky-400 bg-sky-400/10 border-sky-400/20">
+                              Map Lv.{mapInfo.mapLevel}
+                            </Badge>
+                          )}
+                          {mapInfo.bossLevel > 0 && (
+                            <Badge variant="outline" className="gap-1 text-[10px] px-1.5 py-0 h-4 border text-pink-400 bg-pink-400/10 border-pink-400/20">
+                              Boss Lv.{mapInfo.bossLevel}
+                            </Badge>
+                          )}
                         </div>
                       )}
                     </div>

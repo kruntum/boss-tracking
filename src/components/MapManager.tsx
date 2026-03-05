@@ -60,6 +60,8 @@ export function MapManager() {
   const [bossName, setBossName] = useState("");
   const [element, setElement] = useState("");
   const [monsterType, setMonsterType] = useState("");
+  const [mapLevel, setMapLevel] = useState("");
+  const [bossLevel, setBossLevel] = useState("");
   
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -68,7 +70,7 @@ export function MapManager() {
     const trimmedName = name.trim();
     const trimmedBoss = bossName.trim();
     
-    if (!trimmedName || !trimmedBoss || !element || !monsterType) {
+    if (!trimmedName || !trimmedBoss || !element || !monsterType || !mapLevel || !bossLevel) {
       toast.error("Please fill in all map and boss details");
       return;
     }
@@ -79,7 +81,9 @@ export function MapManager() {
         name: trimmedName,
         bossName: trimmedBoss,
         element,
-        monsterType
+        monsterType,
+        mapLevel: parseInt(mapLevel, 10) || 0,
+        bossLevel: parseInt(bossLevel, 10) || 0,
       };
 
       if (editingId) {
@@ -103,6 +107,8 @@ export function MapManager() {
     setBossName("");
     setElement("");
     setMonsterType("");
+    setMapLevel("");
+    setBossLevel("");
   };
 
   const startEdit = (map: any) => {
@@ -111,6 +117,8 @@ export function MapManager() {
     setBossName(map.bossName || "");
     setElement(map.element || "");
     setMonsterType(map.monsterType || "");
+    setMapLevel(map.mapLevel?.toString() || "");
+    setBossLevel(map.bossLevel?.toString() || "");
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -191,6 +199,32 @@ export function MapManager() {
                 </SelectContent>
               </Select>
             </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="map-level">Map Level</Label>
+              <Input
+                id="map-level"
+                type="number"
+                min="1"
+                placeholder="e.g. 50"
+                value={mapLevel}
+                onChange={(e) => setMapLevel(e.target.value)}
+                className="bg-background/50"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="boss-level">Boss Level</Label>
+              <Input
+                id="boss-level"
+                type="number"
+                min="1"
+                placeholder="e.g. 60"
+                value={bossLevel}
+                onChange={(e) => setBossLevel(e.target.value)}
+                className="bg-background/50"
+              />
+            </div>
           </div>
           
           <div className="flex justify-end gap-2">
@@ -200,7 +234,7 @@ export function MapManager() {
                 Cancel
               </Button>
             )}
-            <Button type="submit" disabled={isSubmitting || !name.trim() || !bossName.trim() || !element || !monsterType}>
+            <Button type="submit" disabled={isSubmitting || !name.trim() || !bossName.trim() || !element || !monsterType || !mapLevel || !bossLevel}>
               {isSubmitting ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -224,19 +258,21 @@ export function MapManager() {
                 <TableHead>Boss Name</TableHead>
                 <TableHead>Element</TableHead>
                 <TableHead>Monster Type</TableHead>
+                <TableHead>Map Lv.</TableHead>
+                <TableHead>Boss Lv.</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {loading ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="h-24 text-center">
+                  <TableCell colSpan={7} className="h-24 text-center">
                     <Loader2 className="mx-auto h-5 w-5 animate-spin text-muted-foreground" />
                   </TableCell>
                 </TableRow>
               ) : maps.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
+                  <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
                     No maps found. Add your first map above.
                   </TableCell>
                 </TableRow>
@@ -276,6 +312,16 @@ export function MapManager() {
                           </span>
                         );
                       })()}
+                    </TableCell>
+                    <TableCell>
+                      <span className="text-sm font-mono text-muted-foreground">
+                        {map.mapLevel || "-"}
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      <span className="text-sm font-mono text-muted-foreground">
+                        {map.bossLevel || "-"}
+                      </span>
                     </TableCell>
                     <TableCell className="text-right">
                       <Button
